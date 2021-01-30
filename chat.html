@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>local chat</title>
+<style type="text/css">
+body{
+font-weight: 400;
+font-family: sans-serif;
+}
+h1{
+font-weight: 300;
+color: green;
+text-align: center;
+font-size: 24px;
+}
+#contentWrap{
+display: none;
+}
+#chatWrap{
+padding: 10px;
+border: 2px solid black;
+width: 300px;
+box-sizing: border-box;
+background: lightyellow;
+float: left
+}
+#chat{
+overflow-y: scroll;
+height: 500px;
+border: 1px solid green;
+width: 275px;
+background: white;
+padding: 0 10px;
+box-sizing: border-box;
+margin-bottom: 30px;
+}
+#chat ul{
+list-style-type: none;
+padding: 0;
+display: inline-block;
+ 
+}
+#chat ul li{
+padding: 4px;
+box-sizing: border-box;
+border: 1px solid blue;
+background: lightblue;
+margin: 1px 0;
+font-size: 14px;
+width: 250px;
+}
+#chat ul li b{
+border-right: 2px solid #000;
+margin: 0 5px 0 0; 
+}
+#chatWrap form input{
+height: 15px;
+margin: 5px;
+padding: 5px 5px;
+width: 250px;
+padding: 10px;
+box-sizing: border-box;
+}
+#contentWrap #users{
+margin-left: 320px;
+width: 200px;
+border: 1px solid black;
+background: linear-gradient(120deg, #eee, #fff);
+ 
+}
+ 
+</style>
+</head>
+<body>
+<h1>local chat</h1>
+ 
+<div id="nickWrap">
+<p>Enter a username:</p>
+<form id="setNick">
+<input size="35" type="text" id="nickname" />
+<p id="error"></p>
+<input type="submit" value="Enter chatroom" />
+</form>
+</div>
+<div id="contentWrap">
+<div id="chatWrap">
+<div id="chat"><ul id="cht"></ul></div>
+<form id="send-message">
+<input type="text" id="message" placeholder="your message" />
+</form> 
+</div>
+<div id="users">
+ 
+</div>
+</div>
+ 
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script>
+jQuery(function($){
+var socket = io.connect();
+var $nickForm = $('#setNick');
+var $nickError = $('#error');
+var $nickBox = $('#nickname');
+var $users = $('#users');
+var $messageForm = $('#send-message');
+var $messageBox = $('#message');
+var $chat = $('#cht');
+ 
+$nickForm.submit(function(e){
+e.preventDefault();
+socket.emit('new user', $nickBox.val(), function(data){
+if(data){
+$('#nickWrap').hide();
+$('#contentWrap').show();
+} else{
+$nickError.html('sorry, that username has been taken, try another one!');
+}
+});
+$nickBox.val('');
+});
+ 
+$messageForm.submit(function(e){
+e.preventDefault();
+socket.emit('send message', $messageBox.val());
+$messageBox.val('');
+});
+ 
+socket.on('usernames', function(data){
+var html = '<h2>online users:</h2><hr />';
+for(i=0; i < data.length; i++){
+html += data[i] + '<br />';
+}
+$users.html(html);
+});
+ 
+socket.on('new message', function(data){
+$chat.append("<li><b>" + data.nick + " </b>" + data.msg + "</li><br />");
+});
+})
+</script>
+</body>
+</html>

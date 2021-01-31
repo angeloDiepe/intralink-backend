@@ -26,7 +26,6 @@ module.exports.AdhereClass=async (req,res,next)=>{
 	const {Code,Id,Name}=req.body
 
   console.log(req.body)
-  //http://localhost:8080/user/profil/
 
     /*lorsqu'un user veut adherer a une classe il fournit le code
      de la classe et le systeme lui retourne l'id de la class qu'il
@@ -199,3 +198,6 @@ module.exports.getHomework=async (req, res) => {
     
   .catch(err=>console.log(err))
 };
+module.exports.removeUserOfClass=(req,res,next)=>{
+  Class.update({_id:id})
+}

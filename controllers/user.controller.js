@@ -5,6 +5,7 @@ const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const User =require('../models/User.model.js');
+const Group=require('../models/Group.model.js');
 
 // Mongo URI
 const mongoURI = process.env.MONGO_URI;
@@ -24,7 +25,29 @@ conn.once('open', () => {
 useNewUrlParser: true
 
 
+/***********/
+const AddUser=(filiere,name,id,pseudo)=>{
 
+  Group.update({Name:checkUserGroup(filiere)},{$push:{"Member":{Name:name,Id:id,Pseudo:pseudo}}})
+  .then(console.log)
+  .catch(console.log)
+}
+const checkUserGroup=(filiere)=>{
+  switch(filiere){
+    case 'GI':
+    return "GI Official"
+    break;
+    case 'GRT':
+    return"GRT Official"
+    break;
+    case 'GBM':
+    return"GBM Official"
+    break;
+    case 'GEII':
+    return"GEII Official"
+    break;
+  }
+}
 module.exports.Login=(req,res,next)=>{
 	const {Email,Password}=req.body;
     console.log(req.body)
@@ -42,31 +65,41 @@ module.exports.Login=(req,res,next)=>{
 }
 
 module.exports.SignUp=(req,res,next)=>{
-    const {Email,Password,Phone,Name,Surname,Pseudo,Role,Niveau,Filiere,Departement,Formation}=req.body;
-     console.log(req.body);
+    const {Email,Password,Phone,Name,Surname,Pseudo,Role,Niveau,Filiere,Departement,Formation,Gender}=req.body;
+    console.log(checkUserGroup(Filiere))
+    let GROUP=[];
+    GROUP.push({Name:checkUserGroup(Filiere)})
+    let role="";
+     if(Role===undefined){
+      role="etudiant"
+    }else{role=req.body.Role}
     bcrypt.hash(Password,10)
     .then(hash=>{
+      console.log(hash)
     	const user= new User({
     		Password:hash,
     		Email,
     		Name,
     		Surname,
-    		Role,
+    		Role:role,
     		Phone,
     		Pseudo,
-            Niveau,
-            Departement,
-            Filiere,
-            Formation
+        Niveau,
+        Departement,
+        Filiere,
+        Formation,
+        Gender,
+        Group:GROUP
     	})
     	user.save()
-    	.then(user=>{
-            console.log(user)
+    	.then(async user=>{
+            
            if(!user)
            	return res.status(404).json({error:"user are not created"})
-            let token =jwt.sign({user:user},process.env.KEY_JWT,{expiresIn:86400});
-            res.status(200).json({auth:true,token:token,message:'good'});
-
+            let token =jwt.sign({user:user},"superSecre@Key007",{expiresIn:86400});
+            await AddUser(Filiere,Name,user._id,Pseudo);
+            res.status(200).json({auth:true,token:token,message:'good',user:user});
+            console.log(user)
            })
     	.catch(error=>console.log(error))
     	})

@@ -1,37 +1,23 @@
 module.exports=(server)=>{
 	onlinesUsers = [];
 	Messages=[];
-	var io = require('socket.io')(server);
-
-	io.sockets.on('connection', function(socket){
-		console.log('un client connecté')
-	socket.on('new user', function(data, callback){
-	if(onlinesUsers.indexOf(data) != -1){
-	callback(false);
-	} else{
-	socket.nickname = data;
-	onlinesUsers.push(socket.nickname);
-	io.sockets.emit('usernames', onlinesUsers);
-	callback(true);
-	updateOnlinesUsers();
-	}
-	});
-	 
-	function updateOnlinesUsers(){
-	io.sockets.emit('usernames', onlinesUsers);
-	}
-	 
-	socket.on('send message', function(data){
-	Messages.push({msg:data,nick:socket.nickname})
-	io.sockets.emit('new message', {msg: data, nick: socket.nickname});
-	});
-	socket.on('disconnect', function(data){
-	if(!socket.nickname) return;
-	onlinesUsers.splice(onlinesUsers.indexOf(socket.nickname), 1);
-	updateOnlinesUsers();
-	});
-	});
-		 console.log(Messages)
+	const io=require('socket.io')(server,{
+	 cors: {
+    origin: '*',
+    methods: 'GET,PUT,POST,DELETE,OPTIONS'.split(','),
+    credentials: true
+     }
+	})
+	io.on('connection',(socket)=>{
+		console.log('connected')
+		socket.emit('init-group',Messages);
+		socket.on('message-group',(message)=>{
+			console.log(message)
+			Messages.push(message)
+			socket.broadcast.emit('push-group',message)
+		})
+	})
 
 	return io;
+
 }

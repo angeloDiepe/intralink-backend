@@ -1,13 +1,18 @@
 const mongoose=require('mongoose');
-const Messages=require('Message.js')
+const Messages=require('./Message.model.js')
+
 const GroupSchema=mongoose.Schema({
-	_id:String,
-	Nom:{
+	Name:{
 		type:String,
 		required:true
 	},
 	Admins:[String],
-	Member:[String],
-	Messages:[Messages]
+	Member:[{
+		Id:String,
+		Name:String,
+		Pseudo:String
+	}],
+	Messages:[Messages],
+	Date_create:Date
 })
-module.exports=mongoose.models('Group',GroupSchema)
+module.exports=mongoose.model('Group',GroupSchema)

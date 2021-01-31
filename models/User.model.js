@@ -40,7 +40,9 @@ const UserSchema=mongoose.Schema({
 		type:String
 	},
 	Formation:String,
+	Gender:String,
 	Class:[{id:String,Name:String}],
+	Group:[{id:String,Name:String}],
 	Image:{
 		_id:String,
 		id:String,
